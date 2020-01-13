@@ -31,9 +31,17 @@ export default function signIn({ navigation }) {
     useEffect(() => {
         // verifica se um usuário está logado
         async function recuperaUser() {
-            AsyncStorage.getItem('smartGreen:token').then(token => {
-                if(token) {
+            AsyncStorage.getItem('access').then(access => {
+                if(access) {
                     navigation.navigate('main', { token })
+                }else{
+                    navigation.navigate('signIn')
+                }
+            })
+
+            AsyncStorage.getItem('refresh').then(refresh => {
+                if(!refresh){
+                    
                 }
             })
         }

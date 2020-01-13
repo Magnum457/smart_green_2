@@ -54,6 +54,9 @@ const formataData = (data) => {
 // FUNCTIONAL COMPONENT
 export default function main({ navigation }) {
     // STATES
+        // tokens
+        const [ access, setAccess ] = useState('')
+        const [ refresh, setRefresh ] = useState('')
         // dados a serem cadastrados
         const [ campo, setCampo ] = useState('')
         const [ ponto, setPonto ] = useState(1)
@@ -92,9 +95,17 @@ export default function main({ navigation }) {
     useEffect(() => {
         // verifica se um usuário está logado
         async function recuperaUser() {
-            AsyncStorage.getItem('smartGreen:token').then(token => {
-                if(token) {
+            AsyncStorage.getItem('access').then(access => {
+                if(access) {
                     navigation.navigate('main', { token })
+                }else{
+                    navigation.navigate('signIn')
+                }
+            })
+
+            AsyncStorage.getItem('refresh').then(refresh => {
+                if(!refresh){
+                    
                 }
             })
         }
