@@ -11,8 +11,6 @@ import {
     Input,
     Button,
     ButtonText,
-    SignUpLink,
-    SignUpText,
     ErrorMessage
 } from './styles'
 
@@ -20,6 +18,7 @@ import {
 import logo from '../../../assets/img/logoCircleWhite.png'
 
 // SERVICES
+import api from '../../services/api'
 
 // FUNCTIONAL COMPONENT
 export default function signIn({ navigation }) {
@@ -51,14 +50,21 @@ export default function signIn({ navigation }) {
         } else {
             try{
                 // verificação dos dados foram corretos
-                if (login === "Magno" && senha === "senha") {
-                    
-                    await AsyncStorage.setItem('user', login)
+                const response = await api.post('/api/token', {
+                    login,
+                    senha
+                })
 
-                    navigation.navigate('main', { login })
-                } else {
-                    setError("Dados inválidos")
+                if(!response){
+                    setError('Erro ao se comunicar!!')
+                    return
                 }
+
+                const { access, refresh } = response.data
+
+                await AsyncStorage.setItem('access', access)
+                await AsyncStorage.setItem('refresh, refresh')
+                
             } catch(err) {
                 setError(err.message)
             }
@@ -101,9 +107,6 @@ export default function signIn({ navigation }) {
             <Button onPress={handleSignIn}>
                 <ButtonText>Logar</ButtonText>
             </Button>
-            <SignUpLink onPress={handleSignUp}>
-                <SignUpText>Cadastrar</SignUpText>
-            </SignUpLink>
         </Container>
     )
 }
