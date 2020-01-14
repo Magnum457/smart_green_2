@@ -57,24 +57,30 @@ export default function signIn({ navigation }) {
             setError('Preencha o seu login e senha!')
         } else {
             try{
+
+                console.log("chamando a API")
                 // verificação dos dados foram corretos
-                const response = await api.post('/api/token', {
+                const response = await api.post('token/', {
                     login,
                     senha
-                })
+                }, { timeout: 25000 })
 
-                if(!response){
-                    setError('Erro ao se comunicar!!')
-                    return
-                }
+                console.log("chamada finalizada")
+                // if(!response){
+                //     setError('Erro ao se comunicar!!')
+                // }
 
-                const { access, refresh } = response.data
+                // const { access, refresh } = response.data
 
-                await AsyncStorage.setItem('access', access)
-                await AsyncStorage.setItem('refresh, refresh')
+                // console.log(access)
+                // console.log(refresh)
+
+                // await AsyncStorage.setItem('access', access)
+                // await AsyncStorage.setItem('refresh', refresh)
                 
             } catch(err) {
                 setError(err.message)
+                console.log("Não conseguiu se conectar")
             }
         }
     }
