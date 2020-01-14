@@ -37,7 +37,8 @@ import {
     DeleteContainer,
     ContainerContent,
     SimButton,
-    NaoButton
+    NaoButton,
+    Menu
 } from './styles'
 
 // ASSETS
@@ -96,11 +97,11 @@ export default function main({ navigation }) {
         // verifica se um usuário está logado
         async function recuperaUser() {
             AsyncStorage.getItem('access').then(access => {
-                if(access) {
-                    navigation.navigate('main', { token })
-                }else{
-                    navigation.navigate('signIn')
-                }
+                // if(access) {
+                    
+                // }else{
+                //     navigation.navigate('signIn')
+                // }
             })
 
             AsyncStorage.getItem('refresh').then(refresh => {
@@ -124,6 +125,7 @@ export default function main({ navigation }) {
 
     // abra a tela de adicionar o card
     function handleAddCard() {
+        console.log("apertei esse botao")
         setAddCard(true)
     }
 
@@ -149,10 +151,13 @@ export default function main({ navigation }) {
 
     // toggle o menu
     function handleMenu() {
+        console.log("Ta no handleMneu")
         if (menu){
             setMenu(false)
+            console.log(menu)
         } else {
             setMenu(true)
+            console.log(menu)
         }
     }
 
@@ -326,6 +331,16 @@ export default function main({ navigation }) {
                     </AddContainer>
                 )
             }
+
+            {/* Menu */}
+            { menu && (
+                <Menu>
+                    <TouchableHighlight onPress={handleLogout}>
+                        <Text>Sair</Text>
+                    </TouchableHighlight>
+                </Menu>
+            ) }
+
         </Container>
     )
 }

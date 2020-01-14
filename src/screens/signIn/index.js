@@ -32,11 +32,11 @@ export default function signIn({ navigation }) {
         // verifica se um usuário está logado
         async function recuperaUser() {
             AsyncStorage.getItem('access').then(access => {
-                if(access) {
-                    navigation.navigate('main', { token })
-                }else{
-                    navigation.navigate('signIn')
-                }
+                // if(access) {
+                //     navigation.navigate('main', { access })
+                // }else{
+                //     navigation.navigate('signIn')
+                // }
             })
 
             AsyncStorage.getItem('refresh').then(refresh => {
@@ -61,23 +61,24 @@ export default function signIn({ navigation }) {
                 console.log("chamando a API")
                 // verificação dos dados foram corretos
                 const response = await api.post('token/', {
-                    login,
-                    senha
-                }, { timeout: 25000 })
+                    username: login,
+                    password: senha
+                }, { timeout: 5000 })
 
-                console.log("chamada finalizada")
-                // if(!response){
-                //     setError('Erro ao se comunicar!!')
-                // }
+                if(!response){
+                    setError('Erro ao se comunicar!!')
+                }
 
-                // const { access, refresh } = response.data
+                console.log("chamada concluida")
 
-                // console.log(access)
-                // console.log(refresh)
-
-                // await AsyncStorage.setItem('access', access)
-                // await AsyncStorage.setItem('refresh', refresh)
+                const access = response.data.access
+                const refresh = response.data.refresh
                 
+                await AsyncStorage.setItem('access', access)
+                await AsyncStorage.setItem('refresh', refresh)
+
+                navigation.navigate('main')
+
             } catch(err) {
                 setError(err.message)
                 console.log("Não conseguiu se conectar")

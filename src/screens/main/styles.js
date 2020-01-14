@@ -264,3 +264,11 @@ export const DeleteButton = styled.TouchableOpacity`
     border-radius: 5px;
     margin-left: 2px;
 `
+export const Menu = styled.View`
+    width: 30%;
+    height: 30%;
+    position: absolute;
+    z-index: 2;
+    background: #FFF;
+    border: 1px solid #ddd
+`
