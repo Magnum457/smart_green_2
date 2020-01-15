@@ -2,123 +2,123 @@
 import styled from 'styled-components'
 
 // COMPONENTS
-export const Container  = styled.View`
-    flex: 1;
-    background-color: #e5f0ea;
-`
+    export const Container  = styled.View`
+        flex: 1;
+        background-color: #e5f0ea;
+    `
 
-export const Img = styled.Image`
-    height: 97%;
-    width: 25%;
-    
-`
+    export const Img = styled.Image`
+        height: 97%;
+        width: 25%;
+        
+    `
 
 // cabeçalho    
-export const Header = styled.View`
-    width: 100%;
-    height: 5%;
-    padding-right: 15px;
-    padding-left: 15px;
-    flex-direction: row;
-    justify-content: space-between;
-    background-color: #047231;
-` 
+    export const Header = styled.View`
+        width: 100%;
+        height: 5%;
+        padding-right: 15px;
+        padding-left: 15px;
+        flex-direction: row;
+        justify-content: space-between;
+        background-color: #047231;
+    ` 
 
 // Botão para adicionar Cards
-export const AddView = styled.View`
-    position: absolute;
-    top: 90%;
-    left:80%;
-    z-index: 2;
-    width: 50px;
-    height: 50px;
-    justify-content: center;
-    align-items: center;
-    background-color: #ccc;
-    border-radius: 25px;
-`
+    export const AddView = styled.View`
+        position: absolute;
+        top: 90%;
+        left:80%;
+        z-index: 2;
+        width: 50px;
+        height: 50px;
+        justify-content: center;
+        align-items: center;
+        background-color: #ccc;
+        border-radius: 25px;
+    `
 
-export const AddButton = styled.TouchableOpacity`
-    border-radius: 15px;
-    align-items: center;
-    justify-content: center;
-`
+    export const AddButton = styled.TouchableOpacity`
+        border-radius: 15px;
+        align-items: center;
+        justify-content: center;
+    `
 
 // Container para adicionar os cards
-export const AddContainer = styled.View`
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background-color: rgba(0, 0, 0, 0.8);
-    justify-content: center;
-    align-items: center;
-    z-index: 2;
-`
+    export const AddContainer = styled.View`
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background-color: rgba(0, 0, 0, 0.8);
+        justify-content: center;
+        align-items: center;
+        z-index: 2;
+    `
 
-export const AddCard = styled.View`
-    background-color: #fff;
-    width: 80%;
-    align-self: auto;
-    border-radius: 5px;
-    justify-content: center;
-    align-items: center;
-    z-index: 2;
-`
+    export const AddCard = styled.View`
+        background-color: #fff;
+        width: 80%;
+        align-self: auto;
+        border-radius: 5px;
+        justify-content: center;
+        align-items: center;
+        z-index: 2;
+    `
 
-export const AddCardHeader = styled.View`
-    background-color: #ddd;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    align-self: stretch;
-    border-radius: 5px;
-    padding: 5px;
-`
+    export const AddCardHeader = styled.View`
+        background-color: #ddd;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        align-self: stretch;
+        border-radius: 5px;
+        padding: 5px;
+    `
 
-export const AddCardContent = styled.View`
-    background-color: transparent;
-    justify-content: center;
-    align-items: center;
-    align-self: stretch;
-    margin-left: 3px;
-    margin-right: 3px;
-    margin-bottom: 5px;
-`
+    export const AddCardContent = styled.View`
+        background-color: transparent;
+        justify-content: center;
+        align-items: center;
+        align-self: stretch;
+        margin-left: 3px;
+        margin-right: 3px;
+        margin-bottom: 5px;
+    `
 
-export const AddCardLabel = styled.Text`
-    font-size: 14px;
-    font-weight: bold;
-    color: #333;
-`
+    export const AddCardLabel = styled.Text`
+        font-size: 14px;
+        font-weight: bold;
+        color: #333;
+    `
 
-export const AddInput = styled.TextInput`
-    padding: 5px;
-    border: solid 1px #777;
-    border-radius: 5px;
-    align-self: stretch;
-    align-items: center;
-    font-size: 13px;
-`
+    export const AddInput = styled.TextInput`
+        padding: 5px;
+        border: solid 1px #777;
+        border-radius: 5px;
+        align-self: stretch;
+        align-items: center;
+        font-size: 13px;
+    `
 
-export const AddCardSelect = styled.Picker`
-    padding: 5px;
-    border: solid 1px #777;
-    border-radius: 5px;
-    align-self: stretch;
-    align-items: center;
-    text-align: right;
-`
+    export const AddCardSelect = styled.Picker`
+        padding: 5px;
+        border: solid 1px #777;
+        border-radius: 5px;
+        align-self: stretch;
+        align-items: center;
+        text-align: right;
+    `
 
-export const AddCardFooter = styled.View`
-    padding: 5px;
-    margin-top: 5px;
-    align-items: center;
-    justify-content: center;
-    align-self: stretch;
-    background-color: #ddd;
-`
+    export const AddCardFooter = styled.View`
+        padding: 5px;
+        margin-top: 5px;
+        align-items: center;
+        justify-content: center;
+        align-self: stretch;
+        background-color: #ddd;
+    `
 
 // modal para enviar o card
 export const SendContainer = styled.View`
@@ -266,7 +266,9 @@ export const DeleteButton = styled.TouchableOpacity`
 `
 export const Menu = styled.View`
     width: 30%;
-    height: 30%;
+    top: 5%;
+    left:80%;
+    right: 0;
     position: absolute;
     z-index: 2;
     background: #FFF;

@@ -46,6 +46,7 @@ import logo from '../../../assets/img/darkLogoHome.png'
 
 // SERVICES
 import getRealm from '../../services/realm'
+import api from '../../services/api'
 
 // FUNÇÕES AUXILIARES
 const formataData = (data) => {
@@ -59,6 +60,7 @@ export default function main({ navigation }) {
         const [ access, setAccess ] = useState('')
         const [ refresh, setRefresh ] = useState('')
         // dados a serem cadastrados
+        const [ fazenda, setFazenda ] = useState('')
         const [ campo, setCampo ] = useState('')
         const [ ponto, setPonto ] = useState(1)
         const [ profundidade, setProfundidade ] = useState(1)
@@ -73,24 +75,14 @@ export default function main({ navigation }) {
         const [ sendCard, setSendCard ] = useState(false)
         const [ deleteCard, setDeleteCard ] = useState(false)
         const [ menu, setMenu] = useState(false)
+        const [ foundFazenda, setFoundFazenda ] = useState(false)
+        const [ foundCampo, setFoundCampo ] = useState(false)
         // mensagens de debug
         const [ sucessMessage, setSucess ] = useState('')
         const [ errorMessage, setError ] = useState('')
 
     // EFFECTS
     // recupera os cards
-    async function loadData() {
-        const realm = await getRealm()
-
-        const data = realm.objects('Soils')
-
-        
-        if(data.length !== 0) {
-            setData(data)
-        } else {
-            setError('Sem dados')
-        }
-    }
 
     // verificar se o usuário está logado
     useEffect(() => {
@@ -112,10 +104,18 @@ export default function main({ navigation }) {
         }
 
         recuperaUser()
-        loadData()
     })
 
     // HANDLERS
+    // toggle o menu
+    function handleMenu() {
+        if (menu){
+            setMenu(false)
+        } else {
+            setMenu(true)
+        }
+    }
+
     // logout do usuario
     async function handleLogout() {
         await AsyncStorage.clear()
@@ -125,23 +125,10 @@ export default function main({ navigation }) {
 
     // abra a tela de adicionar o card
     function handleAddCard() {
-        console.log("apertei esse botao")
         setAddCard(true)
     }
-
-    // abre a tela para envia o card para a base de dados
-    function handleSendCard({ item }) {
-        setItem(item)
-        setSendCard(true)
-    }
-
-    // abre a tela para deletar o card selecionado
-    function handleDeleteCard({ item }) {
-        setItem(item)
-        setDeleteCard(true)
-    }
     
-    // fecha a tela de adicionar o card
+    // fecha os modais abertos
     function handleCloseCard() {
         setAddCard(false)
         setDeleteCard(false)
@@ -149,104 +136,9 @@ export default function main({ navigation }) {
         setItem([])
     }
 
-    // toggle o menu
-    function handleMenu() {
-        console.log("Ta no handleMneu")
-        if (menu){
-            setMenu(false)
-            console.log(menu)
-        } else {
-            setMenu(true)
-            console.log(menu)
-        }
-    }
-
-    // cria o card, salvando ele na memória do celular
-    async function handleCreateCard() {
-        try{
-            if(campo.length === 0 && ponto <= 0 && profundidade <= 0 && umidade <= 0){
-                setError("Preencha todos os campos")
-                return errorMessage
-            }
-
-            const date = new Date()
-
-            const data = {
-                id: Math.random()*1000,
-                campo: campo,
-                ponto: ponto,
-                profundidade: profundidade,
-                umidade: Number(umidade),
-                dt_create: date,
-                user_create: user,
-                envio: envio
-            }
-
-            const realm = await getRealm()
-
-            realm.write(() => {
-                realm.create('Soils', data, 'modified')
-            })
-
-            setCampo('')
-            setUmidade('')
-            setSucess('Card adicionado')
-            Keyboard.dismiss()
-
-            loadData()
-        } catch (err) {
-            setError(err.message)
-        }
-    }
-
-    // deleta o card da memória do celular
-    async function handleDropCard() {
-        try{
-            const realm = await getRealm()
-
-            // recuperando todos os dados
-            const datas = realm.objects('Soils')
-
-            // filtro de ids
-            const card = datas.find((data) => data.id === item.id)
-
-            // deletando o card
-            realm.write(() => {
-                realm.delete(card)
-            })
-                
-
-            setItem([])
-            
-            handleCloseCard()
-        } catch(err) {
-            setError(err.message)
-            handleCloseCard()
-        }
-    }
-
-    // envia o card para a base de dados
-    async function handleSendingCard() {
-        try{
-            const realm = await getRealm()
-
-            // recuperando todos os dados
-            const datas = realm.objects('Soils')
-
-            // filtro de ids
-            const card = datas.find((data) => data.id === item.id)
-
-            // atualizando o card
-            realm.write(() => {
-                card.envio = true
-            })
-
-
-            handleCloseCard()
-        } catch(err) {
-            setError(err.message)
-            handleCloseCard()
-        }
+    // manipula o botão do addCard
+    async function hendleButton() {
+        
     }
     
     // RENDER
@@ -259,79 +151,6 @@ export default function main({ navigation }) {
                 </TouchableHighlight>
             </Header>
 
-            {/* Botão de adicionar um card */}
-            <AddView>
-                <AddButton onPress={handleAddCard}>
-                    <Icon name="add" size={30} />
-                </AddButton>
-            </AddView>
-
-            {/* conteúdo */}
-            <Content>
-
-            </Content>
-
-            {/* tela para adicionar o card */}
-            {
-                addCard && (
-                    <AddContainer>
-
-                        <AddCard>
-                            <AddCardHeader>
-                                <Text>Adicionar Card</Text>
-                                <TouchableHighlight onPress={handleCloseCard}>
-                                    <Icon name="close" size={20} />
-                                </TouchableHighlight>
-                            </AddCardHeader>
-
-                            <AddCardContent>
-
-                                <AddCardLabel>Campo</AddCardLabel>
-                                <AddInput 
-                                    value={campo}
-                                    onChangeText={setCampo}
-                                />
-
-                                <AddCardLabel>Ponto de Monitoramento</AddCardLabel>
-                                <AddCardSelect
-                                    selectedValue={ponto}
-                                    onValueChange={(itemValue) => setPonto(itemValue)}
-                                >
-                                    <AddCardSelect.Item label="1" value={1} />
-                                    <AddCardSelect.Item label="2" value={2} />
-                                    <AddCardSelect.Item label="3" value={3} />
-                                </AddCardSelect>
-
-                                <AddCardLabel>Profundidade</AddCardLabel>
-                                <AddCardSelect
-                                    selectedValue={profundidade}
-                                    onValueChange={(itemValue) => setProfundidade(itemValue)}
-                                >
-                                    <AddCardSelect.Item label="1" value={1} />
-                                    <AddCardSelect.Item label="2" value={2} />
-                                    <AddCardSelect.Item label="3" value={3} />
-                                </AddCardSelect>
-
-                                <AddCardLabel>Umidade</AddCardLabel>
-                                <AddInput 
-                                    value={umidade}
-                                    onChangeText={setUmidade}
-                                />
-
-                                { sucessMessage.length !== 0 && <Text>{sucessMessage}</Text> }
-                            </AddCardContent>
-
-                            <AddCardFooter>
-                                <TouchableHighlight onPress={handleCreateCard}>
-                                    <Icon name="save" size={30} />
-                                </TouchableHighlight>
-                            </AddCardFooter>
-                        </AddCard>
-
-                    </AddContainer>
-                )
-            }
-
             {/* Menu */}
             { menu && (
                 <Menu>
@@ -339,6 +158,44 @@ export default function main({ navigation }) {
                         <Text>Sair</Text>
                     </TouchableHighlight>
                 </Menu>
+            ) }
+
+            {/* Botão de adicionar um card */}
+            <AddView>
+                <AddButton onPress={handleAddCard}>
+                    <Icon name="add" size={30} />
+                </AddButton>
+            </AddView>
+
+            {/* Modal de adição de card */}
+            {addCard && (
+                <AddContainer>
+                    <AddCard>
+                        <AddCardHeader>
+                            <Text>Adicionar Card</Text>
+                            <TouchableHighlight onPress={handleCloseCard}>
+                                <Icon name="close" size={20} />
+                            </TouchableHighlight>
+                        </AddCardHeader>
+
+                        <AddCardContent>
+                            <AddCardLabel>Fazenda</AddCardLabel>
+                            <AddInput
+                                value={fazenda}
+                                onChangeText={setFazenda}
+                                editable={ foundFazenda ? true : false }
+                            />
+
+                            { sucessMessage.length !== 0 && <Text>{sucessMessage}</Text> }
+                        </AddCardContent>
+
+                        <AddCardFooter>
+                            <TouchableHighlight>
+                                <Icon name={foundCampo ? "save" : "search"} size={30}/>
+                            </TouchableHighlight>
+                        </AddCardFooter>
+                    </AddCard>
+                </AddContainer>
             ) }
 
         </Container>
