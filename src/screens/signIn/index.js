@@ -58,7 +58,6 @@ export default function signIn({ navigation }) {
         } else {
             try{
 
-                console.log("chamando a API")
                 // verificação dos dados foram corretos
                 const response = await api.post('token/', {
                     username: login,
@@ -69,8 +68,6 @@ export default function signIn({ navigation }) {
                     setError('Erro ao se comunicar!!')
                 }
 
-                console.log("chamada concluida")
-
                 const access = response.data.access
                 const refresh = response.data.refresh
                 
@@ -79,9 +76,18 @@ export default function signIn({ navigation }) {
 
                 navigation.navigate('main')
 
-            } catch(err) {
-                setError(err.message)
-                console.log("Não conseguiu se conectar")
+            } catch(error) {
+                setError(error.message)
+                if (error.response) {
+                    console.log(error.response.data);
+                    console.log(error.response.status);
+                    console.log(error.response.headers);
+                  } else if (error.request) {
+                    console.log(error.request);
+                  } else {
+                    console.log('Error', error.message);
+                  }
+                  console.log(error.config);
             }
         }
     }

@@ -3,6 +3,9 @@ import React, { useState, useEffect } from 'react'
 import { StatusBar, Text, TouchableHighlight, Keyboard, View } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 import AsyncStorage from '@react-native-community/async-storage'
+import RNPickerSelect from 'react-native-picker-select'
+
+import { formataData } from '../../libs/functions'
 
 // STYLES
 import {
@@ -48,10 +51,7 @@ import logo from '../../../assets/img/darkLogoHome.png'
 import getRealm from '../../services/realm'
 import api from '../../services/api'
 
-// FUNÇÕES AUXILIARES
-const formataData = (data) => {
-    return data.getDate() + "/" + data.getMonth() + "/" + data.getFullYear() + " às " + data.getHours() + ":" + data.getMinutes() + ":" + data.getSeconds()
-}
+
 
 // FUNCTIONAL COMPONENT
 export default function main({ navigation }) {
@@ -67,6 +67,8 @@ export default function main({ navigation }) {
         const [ umidade, setUmidade ] = useState('')
         const [ envio, setEnvio ] = useState(false)
         // dados a serem manipulados
+        const [ dadosFazendas, setDadosFazendas ] = useState([])
+        const [ dadosCampos, setDadosCampos ] = useState([])
         const [ user, setUser ] = useState('')
         const [ data, setData] = useState([])
         const [ item, setItem ] = useState([])
@@ -86,29 +88,61 @@ export default function main({ navigation }) {
 
     // verificar se o usuário está logado
     useEffect(() => {
-        // verifica se um usuário está logado
-        async function recuperaUser() {
-            AsyncStorage.getItem('access').then(access => {
-                // if(access) {
-                    
-                // }else{
-                //     navigation.navigate('signIn')
-                // }
-            })
-
-            AsyncStorage.getItem('refresh').then(refresh => {
-                if(!refresh){
-                    
-                }
-            })
-        }
 
         recuperaUser()
-    })
+        recuperaDados('fazenda')
+    },[])
+
+    // FUNÇÕES PARA OS EFFECTS
+    // verifica se um usuário está logado
+    async function recuperaUser() {
+        try {
+            const Access = await AsyncStorage.getItem('access')
+            const Refresh = await AsyncStorage.getItem('refresh')    
+        } catch (error) {
+            console.log(error);
+            
+        }
+    }
+
+    // recupera os dados da api
+    async function recuperaDados(type) {
+        if (type === 'fazenda') {
+            console.log('pegando os dados das fazendas');
+            
+            try {
+                const response = await api.get('farm/')
+                const fazendas = response.data
+                console.log(fazendas[0]);
+                
+
+            } catch (error) {
+                if (error.response) {
+                    console.log(error.response.data.detail);
+                    // console.log("Status: " + error.response.status);
+                    // console.log(error.response.headers);
+                  } else if (error.request) {
+                    console.log(error.request);
+                  } else {
+                    console.log('Error', error.message);
+                  }
+                  console.log(error.config);
+            }
+        } else if (type === 'campo') {
+            try {
+                console.log('pegando os dados dos campos');
+                
+            } catch (error) {
+                console.log(error)
+            }
+        } else {
+            setError('Erro ao consultar o banco')
+        }
+    }
 
     // HANDLERS
     // toggle o menu
-    function handleMenu() {
+    async function handleMenu() {
         if (menu){
             setMenu(false)
         } else {
@@ -137,7 +171,7 @@ export default function main({ navigation }) {
     }
 
     // manipula o botão do addCard
-    async function hendleButton() {
+    async function handleButton() {
         
     }
     
@@ -180,12 +214,22 @@ export default function main({ navigation }) {
 
                         <AddCardContent>
                             <AddCardLabel>Fazenda</AddCardLabel>
-                            <AddInput
-                                value={fazenda}
-                                onChangeText={setFazenda}
-                                editable={ foundFazenda ? true : false }
-                            />
-
+                            <AddCardSelect
+                                selectedValue={'---Fazendas---'}
+                                onValueChange={(itemValue) => setFazenda(itemValue)}
+                                enabled={foundFazenda ? false : true}
+                            >
+                                {
+                                    dadosFazendas.map((dadosFazenda) => {
+                                        return (
+                                            <AddCardSelect.Item 
+                                                label={dadosFazenda.id}
+                                                value={dadosFazenda.id}
+                                            />
+                                        )
+                                    })
+                                }
+                            </AddCardSelect>
                             { sucessMessage.length !== 0 && <Text>{sucessMessage}</Text> }
                         </AddCardContent>
 
