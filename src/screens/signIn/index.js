@@ -31,19 +31,13 @@ export default function signIn({ navigation }) {
     useEffect(() => {
         // verifica se um usuário está logado
         async function recuperaUser() {
-            AsyncStorage.getItem('access').then(access => {
-                // if(access) {
-                //     navigation.navigate('main', { access })
-                // }else{
-                //     navigation.navigate('signIn')
-                // }
-            })
-
-            AsyncStorage.getItem('refresh').then(refresh => {
-                if(!refresh){
-                    
-                }
-            })
+            const Access = await AsyncStorage.getItem('access')
+            const Refresh = await AsyncStorage.getItem('refresh')
+            if (!Access || !Refresh) {
+                navigation.navigate('signIn')
+            } else {
+                navigation.navigate('main')
+            }    
         }
 
         recuperaUser()

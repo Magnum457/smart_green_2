@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react'
 import { StatusBar, Text, TouchableHighlight, Keyboard, View } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 import AsyncStorage from '@react-native-community/async-storage'
-import RNPickerSelect from 'react-native-picker-select'
 
 import { formataData } from '../../libs/functions'
 
@@ -56,19 +55,18 @@ import api from '../../services/api'
 // FUNCTIONAL COMPONENT
 export default function main({ navigation }) {
     // STATES
-        // tokens
-        const [ access, setAccess ] = useState('')
-        const [ refresh, setRefresh ] = useState('')
         // dados a serem cadastrados
         const [ fazenda, setFazenda ] = useState('')
         const [ campo, setCampo ] = useState('')
-        const [ ponto, setPonto ] = useState(1)
-        const [ profundidade, setProfundidade ] = useState(1)
-        const [ umidade, setUmidade ] = useState('')
+        const [ ponto, setPonto ] = useState(0)
+        const [ solo, setSolo ] = useState(0)
+        const [ potencialMatrico, setPotencialMatrico ] = useState(0) 
         const [ envio, setEnvio ] = useState(false)
         // dados a serem manipulados
         const [ dadosFazendas, setDadosFazendas ] = useState([])
         const [ dadosCampos, setDadosCampos ] = useState([])
+        const [ dadosPontos, setDadosPontos ] = useState([])
+        const [ dadosSolos, setDadosSolos ] = useState([])
         const [ user, setUser ] = useState('')
         const [ data, setData] = useState([])
         const [ item, setItem ] = useState([])
@@ -92,13 +90,16 @@ export default function main({ navigation }) {
         recuperaUser()
         recuperaDados('fazenda')
     },[])
-
+    
     // FUNÇÕES PARA OS EFFECTS
     // verifica se um usuário está logado
     async function recuperaUser() {
         try {
             const Access = await AsyncStorage.getItem('access')
-            const Refresh = await AsyncStorage.getItem('refresh')    
+            const Refresh = await AsyncStorage.getItem('refresh')
+            if (!Access || !Refresh) {
+                navigation.navigate('signIn')
+            }    
         } catch (error) {
             console.log(error);
             
@@ -113,9 +114,8 @@ export default function main({ navigation }) {
             try {
                 const response = await api.get('farm/')
                 const fazendas = response.data
-                console.log(fazendas[0]);
+                setDadosFazendas(fazendas)
                 
-
             } catch (error) {
                 if (error.response) {
                     console.log(error.response.data.detail);
@@ -129,17 +129,40 @@ export default function main({ navigation }) {
                   console.log(error.config);
             }
         } else if (type === 'campo') {
+            console.log('pegando os dados dos campos');
             try {
-                console.log('pegando os dados dos campos');
-                
+                if(fazenda !== 0) {
+                    const response = await api.get(`farm/${fazenda}/field`)
+                    const campos = response.data
+                    
+                    setDadosCampos(campos)
+                }
+
             } catch (error) {
                 console.log(error)
             }
+        } else if(type === 'pontos'){
+            console.log('pegando os dados dos pontos');
+            try {
+                if(fazenda !== 0) {
+                    const responsePontos = await api.get(`farm/${fazenda}/field/${campo}/monitoringpoint`)
+                    const pontos = responsePontos.data
+                    const responseSolos = await api.get(`farm/${fazenda}/field/${campo}/soillayer`)
+                    const solos = responseSolos.data
+                
+                    setDadosPontos(pontos)
+                    setDadosSolos(solos)
+                }
+
+            } catch (error) {
+                console.log(error)
+            }
+            
         } else {
             setError('Erro ao consultar o banco')
         }
     }
-
+    
     // HANDLERS
     // toggle o menu
     async function handleMenu() {
@@ -172,7 +195,43 @@ export default function main({ navigation }) {
 
     // manipula o botão do addCard
     async function handleButton() {
-        
+        try {
+            if (!foundFazenda) {
+                await recuperaDados('campo')
+                setFoundFazenda(true)
+            } else if(!foundCampo) {
+                await recuperaDados('pontos')
+                setFoundCampo(true)
+            } else {
+                try {
+                    const date = new Date()
+                    const response = await api.post('soilmoisturedata/', {
+                        matric_potential: parseFloat(potencialMatrico),
+                        Soil_Layer: solo,
+                        Field: campo,
+                        Monitoring_Point: ponto,
+                        date: formataData(date)
+                    }, { timeout: 5000 })
+                    
+                    if(!response){
+                        setError('Erro ao se comunicar!!')
+                    }else {
+                        console.log('deu certo');
+                        setFoundCampo(false)
+                        setFoundFazenda(false)
+                        setSucess('Dado enviado com sucesso!!')
+                    }
+
+                } catch (error) {
+                    setError(error)
+                    console.log(error.message);
+                    console.log(error.config);              
+                }
+            }
+            
+        } catch (error) {
+            setError('Erro ao recuperar os dados')
+        }
     }
     
     // RENDER
@@ -215,26 +274,91 @@ export default function main({ navigation }) {
                         <AddCardContent>
                             <AddCardLabel>Fazenda</AddCardLabel>
                             <AddCardSelect
-                                selectedValue={'---Fazendas---'}
+                                selectedValue={fazenda}
                                 onValueChange={(itemValue) => setFazenda(itemValue)}
                                 enabled={foundFazenda ? false : true}
+                                mode={"dropdown"}
                             >
+                                <AddCardSelect.Item label={'Selecione uma fazenda'} value={0} key={0}/>
                                 {
-                                    dadosFazendas.map((dadosFazenda) => {
+                                    dadosFazendas.map(item => {
                                         return (
-                                            <AddCardSelect.Item 
-                                                label={dadosFazenda.id}
-                                                value={dadosFazenda.id}
-                                            />
-                                        )
+                                            <AddCardSelect.Item label={`${item.id}`} value={item.id} key={item.id}/>
+                                            )
                                     })
                                 }
                             </AddCardSelect>
+                            {
+                                foundFazenda && (
+                                    <>
+                                        <AddCardLabel>Campo</AddCardLabel>
+                                        <AddCardSelect
+                                            selectedValue={campo}
+                                            onValueChange={(itemValue) => setCampo(itemValue)}
+                                            enabled={foundCampo ? false : true}
+                                            mode={"dropdown"}
+                                        >
+                                            <AddCardSelect.Item label={'Selecione um campo'} value={0} key={0}/>
+                                            {
+                                                dadosCampos.map(item => {
+                                                    return (
+                                                        <AddCardSelect.Item label={`${item.id}`} value={item.id} key={item.id}/>
+                                                        )
+                                                })
+                                            }
+                                        </AddCardSelect>
+                                    </>
+                                )
+                            }
+                            {
+                                foundCampo && (
+                                    <>
+                                        <AddCardLabel>Solos</AddCardLabel>
+                                        <AddCardSelect
+                                            selectedValue={solo}
+                                            onValueChange={(itemValue) => setSolo(itemValue)}
+                                            mode={"dropdown"}
+                                        >
+                                            <AddCardSelect.Item label={'Selecione um tipo de solo'} value={0} key={0}/>
+                                            {
+                                                dadosSolos.map(item => {
+                                                    return (
+                                                        <AddCardSelect.Item label={`${item.id}`} value={item.id} key={item.id}/>
+                                                        )
+                                                })
+                                            }
+                                        </AddCardSelect>
+                                        <AddCardLabel>Pontos de monitoramento</AddCardLabel>
+                                        <AddCardSelect
+                                            selectedValue={ponto}
+                                            onValueChange={(itemValue) => setPonto(itemValue)}
+                                            mode={"dropdown"}
+                                        >
+                                            <AddCardSelect.Item label={'Selecione um tipo de solo'} value={0} key={0}/>
+                                            {
+                                                dadosPontos.map(item => {
+                                                    return (
+                                                        <AddCardSelect.Item label={`${item.description}`} value={item.id} key={item.id}/>
+                                                        )
+                                                })
+                                            }
+                                        </AddCardSelect>
+                                        <AddCardLabel>Pontencial Mátrico</AddCardLabel>
+                                        <AddInput
+                                            value={potencialMatrico.toString()}
+                                            onChangeText={setPotencialMatrico}
+                                            autoCorrect={false}
+                                            autoCapitalize="none"
+                                        />
+                                    </>
+                                )
+                            }
                             { sucessMessage.length !== 0 && <Text>{sucessMessage}</Text> }
+                            { errorMessage.length !== 0 && <Text>{sucessMessage}</Text> }
                         </AddCardContent>
 
                         <AddCardFooter>
-                            <TouchableHighlight>
+                            <TouchableHighlight onPress={handleButton}>
                                 <Icon name={foundCampo ? "save" : "search"} size={30}/>
                             </TouchableHighlight>
                         </AddCardFooter>
