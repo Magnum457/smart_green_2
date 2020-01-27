@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { StatusBar, Text, TouchableHighlight, Keyboard, View } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 import AsyncStorage from '@react-native-community/async-storage'
+import { useNetInfo } from '@react-native-community/netinfo'
 
 import { formataData } from '../../libs/functions'
 
@@ -50,8 +51,6 @@ import logo from '../../../assets/img/darkLogoHome.png'
 import getRealm from '../../services/realm'
 import api from '../../services/api'
 
-
-
 // FUNCTIONAL COMPONENT
 export default function main({ navigation }) {
     // STATES
@@ -80,15 +79,18 @@ export default function main({ navigation }) {
         // mensagens de debug
         const [ sucessMessage, setSucess ] = useState('')
         const [ errorMessage, setError ] = useState('')
+        // teste de conexão
+        const netInfo = useNetInfo()
 
     // EFFECTS
     // recupera os cards
 
     // verificar se o usuário está logado
     useEffect(() => {
-
+        
         recuperaUser()
         recuperaDados('fazenda')
+
     },[])
     
     // FUNÇÕES PARA OS EFFECTS
@@ -115,6 +117,8 @@ export default function main({ navigation }) {
                 const response = await api.get('farm/')
                 const fazendas = response.data
                 setDadosFazendas(fazendas)
+                console.log(response.data);
+                console.log('lalalal');
                 
             } catch (error) {
                 if (error.response) {
@@ -365,7 +369,6 @@ export default function main({ navigation }) {
                     </AddCard>
                 </AddContainer>
             ) }
-
         </Container>
     )
 }
