@@ -5,7 +5,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons'
 import AsyncStorage from '@react-native-community/async-storage'
 import { useNetInfo } from '@react-native-community/netinfo'
 
-import { formataData } from '../../libs/functions'
+import { formataData, getNetwork } from '../../libs/functions'
 
 // STYLES
 import {
@@ -76,6 +76,7 @@ export default function main({ navigation }) {
         const [ menu, setMenu] = useState(false)
         const [ foundFazenda, setFoundFazenda ] = useState(false)
         const [ foundCampo, setFoundCampo ] = useState(false)
+        const [ foundPontos, setFoundPontos ] = useState(false)
         // mensagens de debug
         const [ sucessMessage, setSucess ] = useState('')
         const [ errorMessage, setError ] = useState('')
@@ -90,7 +91,7 @@ export default function main({ navigation }) {
         
         recuperaUser()
         recuperaDados('fazenda')
-
+        getNetwork()
     },[])
     
     // FUNÇÕES PARA OS EFFECTS
@@ -117,14 +118,12 @@ export default function main({ navigation }) {
                 const response = await api.get('farm/')
                 const fazendas = response.data
                 setDadosFazendas(fazendas)
-                console.log(response.data);
-                console.log('lalalal');
                 
             } catch (error) {
                 if (error.response) {
                     console.log(error.response.data.detail);
-                    // console.log("Status: " + error.response.status);
-                    // console.log(error.response.headers);
+                    console.log("Status: " + error.response.status);
+                    console.log(error.response.headers);
                   } else if (error.request) {
                     console.log(error.request);
                   } else {
@@ -143,7 +142,16 @@ export default function main({ navigation }) {
                 }
 
             } catch (error) {
-                console.log(error)
+                if (error.response) {
+                    console.log(error.response.data.detail);
+                    console.log("Status: " + error.response.status);
+                    console.log(error.response.headers);
+                } else if (error.request) {
+                    console.log(error.request);
+                } else {
+                    console.log('Error', error.message);
+                }
+                  console.log(error.config);
             }
         } else if(type === 'pontos'){
             console.log('pegando os dados dos pontos');
@@ -151,17 +159,45 @@ export default function main({ navigation }) {
                 if(fazenda !== 0) {
                     const responsePontos = await api.get(`farm/${fazenda}/field/${campo}/monitoringpoint`)
                     const pontos = responsePontos.data
-                    const responseSolos = await api.get(`farm/${fazenda}/field/${campo}/soillayer`)
-                    const solos = responseSolos.data
                 
                     setDadosPontos(pontos)
+                }
+
+            } catch (error) {
+                if (error.response) {
+                    console.log(error.response.data);
+                    console.log("Status: " + error.response.status);
+                    console.log(error.response.headers);
+                } else if (error.request) {
+                    console.log(error.request);
+                } else {
+                    console.log('Error', error.message);
+                }
+                  console.log(error.config);
+            }
+
+        } else if (type === 'solos') {
+            console.log('pegando os dados do solo');
+            try {
+                if(fazenda !== 0) {
+                    const responseSolos = await api.get(`farm/${fazenda}/field/${campo}/monitoringpoint/${ponto}/soillayer`)
+                    const solos = responseSolos.data
+                
                     setDadosSolos(solos)
                 }
 
             } catch (error) {
-                console.log(error)
+                if (error.response) {
+                    console.log(error.response.data);
+                    console.log("Status: " + error.response.status);
+                    console.log(error.response.headers);
+                } else if (error.request) {
+                    console.log(error.request);
+                } else {
+                    console.log('Error', error.message);
+                }
+                  console.log(error.config);
             }
-            
         } else {
             setError('Erro ao consultar o banco')
         }
@@ -195,6 +231,11 @@ export default function main({ navigation }) {
         setDeleteCard(false)
         setSendCard(false)
         setItem([])
+        setSucess('')
+        setError('')
+        setFoundCampo(false)
+        setFoundFazenda(false)
+        setFoundPontos(false)
     }
 
     // manipula o botão do addCard
@@ -206,6 +247,9 @@ export default function main({ navigation }) {
             } else if(!foundCampo) {
                 await recuperaDados('pontos')
                 setFoundCampo(true)
+            } else if(!foundPontos) {
+                await recuperaDados('solos')
+                setFoundPontos(true)
             } else {
                 try {
                     const date = new Date()
@@ -223,6 +267,7 @@ export default function main({ navigation }) {
                         console.log('deu certo');
                         setFoundCampo(false)
                         setFoundFazenda(false)
+                        setFoundPontos(false)
                         setSucess('Dado enviado com sucesso!!')
                     }
 
@@ -317,6 +362,29 @@ export default function main({ navigation }) {
                             {
                                 foundCampo && (
                                     <>
+                                        <AddCardLabel>Pontos de monitoramento</AddCardLabel>
+                                        <AddCardSelect
+                                            selectedValue={ponto}
+                                            onValueChange={(itemValue) => setPonto(itemValue)}
+                                            enabled={foundPontos ? false : true}
+                                            mode={"dropdown"}
+                                        >
+                                            <AddCardSelect.Item label={'Selecione um ponto de monitoramento'} value={0} key={0}/>
+                                            {
+                                                dadosPontos.map(item => {
+                                                    return (
+                                                        <AddCardSelect.Item label={`${item.description}`} value={item.id} key={item.id}/>
+                                                        )
+                                                })
+                                            }
+                                        </AddCardSelect>
+                                    </>
+                                )
+                            }
+                            {
+                                (
+                                    foundPontos && (
+                                        <>
                                         <AddCardLabel>Solos</AddCardLabel>
                                         <AddCardSelect
                                             selectedValue={solo}
@@ -332,21 +400,6 @@ export default function main({ navigation }) {
                                                 })
                                             }
                                         </AddCardSelect>
-                                        <AddCardLabel>Pontos de monitoramento</AddCardLabel>
-                                        <AddCardSelect
-                                            selectedValue={ponto}
-                                            onValueChange={(itemValue) => setPonto(itemValue)}
-                                            mode={"dropdown"}
-                                        >
-                                            <AddCardSelect.Item label={'Selecione um tipo de solo'} value={0} key={0}/>
-                                            {
-                                                dadosPontos.map(item => {
-                                                    return (
-                                                        <AddCardSelect.Item label={`${item.description}`} value={item.id} key={item.id}/>
-                                                        )
-                                                })
-                                            }
-                                        </AddCardSelect>
                                         <AddCardLabel>Pontencial Mátrico</AddCardLabel>
                                         <AddInput
                                             value={potencialMatrico.toString()}
@@ -354,7 +407,8 @@ export default function main({ navigation }) {
                                             autoCorrect={false}
                                             autoCapitalize="none"
                                         />
-                                    </>
+                                        </>
+                                    )
                                 )
                             }
                             { sucessMessage.length !== 0 && <Text>{sucessMessage}</Text> }
@@ -363,7 +417,7 @@ export default function main({ navigation }) {
 
                         <AddCardFooter>
                             <TouchableHighlight onPress={handleButton}>
-                                <Icon name={foundCampo ? "save" : "search"} size={30}/>
+                                <Icon name={foundPontos ? "save" : "search"} size={30}/>
                             </TouchableHighlight>
                         </AddCardFooter>
                     </AddCard>
